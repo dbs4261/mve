@@ -1,0 +1,15 @@
+add_library(mve_ogl
+  camera_2d.cc
+  camera_trackball.cc
+  events.cc
+  mesh_renderer.cc
+  render_tools.cc
+  shader_program.cc
+  texture.cc
+  vertex_array.cc
+  vertex_buffer.cc
+)
+target_include_directories(mve_ogl
+  PRIVATE
+    ${CMAKE_HOME_DIRECTORY}/libs/
+)

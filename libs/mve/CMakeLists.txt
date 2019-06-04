@@ -1,0 +1,37 @@
+add_library(mve
+  bundle.cc
+  bundle_io.cc
+  camera.cc
+  depthmap.cc
+  image_exif.cc
+  image_io.cc
+  image_tools.cc
+  marching.cc
+  mesh.cc
+  mesh_info.cc
+  mesh_io.cc
+  mesh_io_npts.cc
+  mesh_io_obj.cc
+  mesh_io_off.cc
+  mesh_io_pbrt.cc
+  mesh_io_ply.cc
+  mesh_io_smf.cc
+  mesh_tools.cc
+  scene.cc
+  view.cc
+  volume.cc
+)
+target_include_directories(mve
+  PUBLIC
+    ${PNG_INCLUDE_DIR}
+    ${TIFF_INCLUDE_DIR}
+    ${JPEG_INCLUDE_DIR}
+    ${CMAKE_HOME_DIRECTORY}/libs/
+)
+target_link_libraries(mve
+  PUBLIC
+    ${PNG_LIBRARY}
+    ${TIFF_LIBRARY}
+    ${JPEG_LIBRARY}
+    mve_util
+)

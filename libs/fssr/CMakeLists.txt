@@ -1,0 +1,15 @@
+add_library(mve_fssr
+  basis_function.cc
+  hermite.cc
+  iso_octree.cc
+  iso_surface.cc
+  mesh_clean.cc
+  octree.cc
+  sample_io.cc
+  triangulation.cc
+  voxel.cc
+)
+target_include_directories(mve_fssr
+  PRIVATE
+    ${CMAKE_HOME_DIRECTORY}/libs/
+)

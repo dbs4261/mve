@@ -1,0 +1,18 @@
+add_library(mve_dmrecon
+  dmrecon.cc
+  global_view_selection.cc
+  image_pyramid.cc
+  local_view_selection.cc
+  mvs_tools.cc
+  patch_optimization.cc
+  patch_sampler.cc
+  single_view.cc
+)
+target_include_directories(mve_dmrecon
+  PRIVATE
+    ${CMAKE_HOME_DIRECTORY}/libs/
+)
+target_link_libraries(mve_dmrecon
+  PUBLIC
+    mve
+)

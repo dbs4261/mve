@@ -1,0 +1,10 @@
+add_library(mve_util
+  arguments.cc
+  file_system.cc
+  ini_parser.cc
+  system.cc
+)
+target_include_directories(mve_util
+  PRIVATE
+    ${CMAKE_HOME_DIRECTORY}/libs/
+)

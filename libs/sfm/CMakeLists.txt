@@ -1,0 +1,43 @@
+add_library(mve_sfm
+  ba_linear_solver.cc
+  bundle_adjustment.cc
+  bundler_common.cc
+  bundler_features.cc
+  bundler_incremental.cc
+  bundler_init_pair.cc
+  bundler_intrinsics.cc
+  bundler_matching.cc
+  bundler_tracks.cc
+  camera_database.cc
+  cascade_hashing.cc
+  exhaustive_matching.cc
+  extract_focal_length.cc
+  feature_set.cc
+  fundamental.cc
+  homography.cc
+  matching.cc
+  nearest_neighbor.cc
+  pose_p3p.cc
+  ransac.cc
+  ransac_fundamental.cc
+  ransac_homography.cc
+  ransac_pose_p3p.cc
+  sift.cc
+  surf.cc
+  triangulate.cc
+  visualizer.cc
+)
+target_include_directories(mve_sfm
+  PUBLIC
+    ${PNG_INCLUDE_DIR}
+    ${TIFF_INCLUDE_DIR}
+    ${JPEG_INCLUDE_DIR}
+    ${CMAKE_HOME_DIRECTORY}/libs/
+)
+target_link_libraries(mve_sfm
+  PUBLIC
+    ${PNG_LIBRARY}
+    ${TIFF_LIBRARY}
+    ${JPEG_LIBRARY}
+    mve
+)
