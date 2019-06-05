@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(SMVS LANGUAGES CXX)
+project(MVE LANGUAGES CXX)
 
 set(ignoreMe "${CMAKE_C_COMPILER}")
 
