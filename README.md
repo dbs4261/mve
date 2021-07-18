@@ -1,4 +1,10 @@
-# Introduction ![Build Status](https://travis-ci.org/simonfuhrmann/mve.svg?branch=master)
+# Fork Differences
+
+This for of the Multi-View Environment is to update the build system to use modern cmake techniques.
+It has not been tested on windows yet. However, on linux, dependencies are found with find_package,
+all flags are manged through targets, automoc is used for umve, and install targets are provided.
+
+# Introduction
 
 The Multi-View Environment is an effort to ease the work with multi-view
 datasets and to support the development of algorithms based on multiple
