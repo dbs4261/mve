@@ -576,7 +576,7 @@ MainWindow::on_generate_thumbs (void)
     }
 
     BatchGenerateThumbs dialog(this);
-    dialog.setModal(this);
+    dialog.setModal(true);
     dialog.set_scene(scene);
     dialog.exec();
 }

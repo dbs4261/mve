@@ -11,3 +11,7 @@ add_subdirectory(prebundle)
 add_subdirectory(scene2pset)
 add_subdirectory(sceneupgrade)
 add_subdirectory(sfmrecon)
+
+if (${WITH_GUI})
+    add_subdirectory(umve)
+endif()

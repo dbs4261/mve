@@ -1,0 +1,4 @@
+set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doxygen)
+doxygen_add_docs(build_documentation ${PROJECT_SOURCE_DIR}/libs ALL COMMENT "Generate documentation with doxygen")
+install(DIRECTORY ${DOXYGEN_OUTPUT_DIRECTORY} DESTINATION ${CMAKE_INSTALL_DOCDIR})
+install(FILES doxygen.html DESTINATION ${CMAKE_INSTALL_DOCDIR})

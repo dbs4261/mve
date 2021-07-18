@@ -192,37 +192,43 @@ ShaderProgram::load_frag_code (std::string const& code)
 inline void
 ShaderProgram::unload_vert (void)
 {
-    glDetachShader(this->prog_id, this->vert_id);
-    check_gl_error();
+    if (this->vert_id != 0) {
+        glDetachShader(this->prog_id, this->vert_id);
+        check_gl_error();
 
-    glDeleteShader(this->vert_id);
-    check_gl_error();
+        glDeleteShader(this->vert_id);
+        check_gl_error();
 
-    this->vert_id = 0;
+        this->vert_id = 0;
+    }
 }
 
 inline void
 ShaderProgram::unload_geom (void)
 {
-    glDetachShader(this->prog_id, this->geom_id);
-    check_gl_error();
+    if (this->geom_id != 0) {
+        glDetachShader(this->prog_id, this->geom_id);
+        check_gl_error();
 
-    glDeleteShader(this->geom_id);
-    check_gl_error();
+        glDeleteShader(this->geom_id);
+        check_gl_error();
 
-    this->geom_id = 0;
+        this->geom_id = 0;
+    }
 }
 
 inline void
 ShaderProgram::unload_frag (void)
 {
-    glDetachShader(this->prog_id, this->frag_id);
-    check_gl_error();
+    if (this->frag_id != 0) {
+        glDetachShader(this->prog_id, this->frag_id);
+        check_gl_error();
 
-    glDeleteShader(this->frag_id);
-    check_gl_error();
+        glDeleteShader(this->frag_id);
+        check_gl_error();
 
-    this->frag_id = 0;
+        this->frag_id = 0;
+    }
 }
 
 inline GLint

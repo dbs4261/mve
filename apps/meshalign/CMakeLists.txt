@@ -1,17 +1,10 @@
-add_executable(meshalign meshalign.cc meshlab_alignment.cc stanford_alignment.cc)
-target_include_directories(meshalign
-  PUBLIC
-    ${PNG_INCLUDE_DIR}
-    ${TIFF_INCLUDE_DIR}
-    ${JPEG_INCLUDE_DIR}
-    ${CMAKE_HOME_DIRECTORY}/libs/
+add_executable(meshalign meshalign.cc
+    meshlab_alignment.h
+    meshlab_alignment.cc
+    range_image.h
+    stanford_alignment.h
+    stanford_alignment.cc
 )
-target_link_libraries(meshalign
-  PUBLIC
-    ${PNG_LIBRARY}
-    ${TIFF_LIBRARY}
-    ${JPEG_LIBRARY}
-    mve_util
-    mve
-    mve_fssr
-)
+target_link_libraries(meshalign PUBLIC mve::core)
+
+install(TARGETS meshalign RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/mve/)
