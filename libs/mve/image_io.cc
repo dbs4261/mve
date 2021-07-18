@@ -122,6 +122,13 @@ load_file_headers (std::string const& filename)
         catch (util::Exception&) {}
 #endif
 
+#ifndef MVE_NO_TIFF_SUPPORT
+        try
+        { return load_tiff_file_headers(filename); }
+        catch (util::FileException&) { throw; }
+        catch (util::Exception&) {}
+#endif
+
         try
         { return load_mvei_file_headers(filename); }
         catch (util::FileException&) { throw; }
@@ -628,6 +635,104 @@ tiff_error_handler (char const* /*module*/, char const* fmt, va_list ap)
     throw util::Exception(msg);
 }
 
+ImageHeaders
+load_tiff_file_headers (std::string const& filename)
+{
+    ImageHeaders headers;
+    TIFFSetWarningHandler(nullptr);
+    TIFFSetErrorHandler(tiff_error_handler);
+
+    TIFF* tif = TIFFOpen(filename.c_str(), "r");
+    if (tif == nullptr)
+        throw util::FileException(filename, "TIFF file format not recognized");
+
+    try
+    {
+        uint32 width, height;
+        uint16 channels, bits, sampleFormat;
+        TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
+        TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
+        TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &channels);
+        TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bits);
+        TIFFGetField(tif, TIFFTAG_SAMPLEFORMAT, &sampleFormat);
+
+        headers.width = width;
+        headers.height = height;
+        headers.channels = channels;
+        headers.type = IMAGE_TYPE_UNKNOWN;
+
+        if (bits == 8) {
+            switch(sampleFormat) {
+                case SAMPLEFORMAT_UINT:
+                    headers.type = IMAGE_TYPE_UINT8;
+                    break;
+                case SAMPLEFORMAT_INT:
+                    headers.type = IMAGE_TYPE_SINT8;
+                    break;
+                case SAMPLEFORMAT_IEEEFP:
+                    headers.type = IMAGE_TYPE_FLOAT;
+                    break;
+                default:
+                    break;
+            }
+        } else if (bits == 16) {
+            switch(sampleFormat) {
+                case SAMPLEFORMAT_UINT:
+                    headers.type = IMAGE_TYPE_UINT16;
+                    break;
+                case SAMPLEFORMAT_INT:
+                    headers.type = IMAGE_TYPE_SINT16;
+                    break;
+                case SAMPLEFORMAT_IEEEFP:
+                    headers.type = IMAGE_TYPE_FLOAT;
+                    break;
+                default:
+                    break;
+            }
+        } else if (bits == 32) {
+            switch(sampleFormat) {
+                case SAMPLEFORMAT_UINT:
+                    headers.type = IMAGE_TYPE_UINT32;
+                    break;
+                case SAMPLEFORMAT_INT:
+                    headers.type = IMAGE_TYPE_SINT32;
+                    break;
+                case SAMPLEFORMAT_IEEEFP:
+                    headers.type = IMAGE_TYPE_FLOAT;
+                    break;
+                default:
+                    break;
+            }
+        } else if (bits == 64) {
+            switch(sampleFormat) {
+                case SAMPLEFORMAT_UINT:
+                    headers.type = IMAGE_TYPE_UINT64;
+                    break;
+                case SAMPLEFORMAT_INT:
+                    headers.type = IMAGE_TYPE_SINT64;
+                    break;
+                case SAMPLEFORMAT_IEEEFP:
+                    headers.type = IMAGE_TYPE_FLOAT;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (headers.type == IMAGE_TYPE_UNKNOWN){
+            throw util::Exception("TIFF file has unsupported bits and/or sample format.");
+        }
+
+        TIFFClose(tif);
+        return headers;
+    }
+    catch (std::exception& e)
+    {
+        TIFFClose(tif);
+        throw;
+    }
+}
+
 ByteImage::Ptr
 load_tiff_file (std::string const& filename)
 {
@@ -771,6 +876,84 @@ save_tiff_16_file (RawImage::ConstPtr image, std::string const& filename)
     tdata_t buffer = const_cast<uint16_t*>(image->get_data_pointer());
     int64_t ret = TIFFWriteEncodedStrip(tif, 0, buffer,
         image->get_value_amount() * sizeof(uint16_t));
+
+    TIFFClose(tif);
+
+    if (ret < 0)
+        throw util::Exception("Error writing TIFF image");
+}
+
+FloatImage::Ptr
+load_tiff_float_file (std::string const& filename)
+{
+    if (sizeof(float) != 4)
+        throw util::Exception("Need 32bit data type for TIFF image.");
+
+    TIFFSetWarningHandler(nullptr);
+    TIFFSetErrorHandler(tiff_error_handler);
+
+    TIFF* tif = TIFFOpen(filename.c_str(), "r");
+    if (!tif)
+        throw util::Exception("TIFF file format not recognized");
+
+    try
+    {
+        /* Read width and height from TIFF and create MVE image. */
+        uint32 width, height;
+        uint16 channels, bits;
+        TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
+        TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
+        TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &channels);
+        TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bits);
+        if (bits != 32)
+            throw util::Exception("TIFF file bits per sample don't match");
+
+        FloatImage::Ptr image = Image<float>::create(width, height, channels);
+
+        /* Scanline based TIFF reading. */
+        uint32 rowstride = TIFFScanlineSize(tif) / sizeof(float);
+        Image<float>::ImageData& data = image->get_data();
+        for (uint32 row = 0; row < height; row++)
+        {
+            tdata_t row_pointer = &data[row * rowstride];
+            TIFFReadScanline(tif, row_pointer, row);
+        }
+
+        TIFFClose(tif);
+        return image;
+    }
+    catch (std::exception& e)
+    {
+        TIFFClose(tif);
+        throw;
+    }
+}
+
+void
+save_tiff_float_file (FloatImage::ConstPtr image, std::string const& filename)
+{
+    if (image == nullptr)
+        throw std::invalid_argument("Null image given");
+
+    TIFF* tif = TIFFOpen(filename.c_str(), "w");
+    if (!tif)
+        throw util::FileException(filename, "Unknown TIFF file error");
+
+    uint32_t width = image->width();
+    uint32_t height = image->height();
+    uint32_t channels = image->channels();
+    TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, width);
+    TIFFSetField(tif, TIFFTAG_IMAGELENGTH, height);
+    TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, channels);
+    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8 * sizeof(float));
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_DEFLATE);
+    TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+    TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+    TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP);
+
+    tdata_t buffer = const_cast<float*>(image->get_data_pointer());
+    int64_t ret = TIFFWriteEncodedStrip(tif, 0, buffer,
+        image->get_value_amount() * sizeof(float));
 
     TIFFClose(tif);
 
