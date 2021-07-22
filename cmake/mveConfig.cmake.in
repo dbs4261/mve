@@ -2,8 +2,6 @@
 
 get_filename_component(MVE_TARGETS_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY CACHE)
 
-message("Finding dependencies for MVE")
-
 find_package(Threads REQUIRED)
 find_package(OpenMP)
 
@@ -14,13 +12,11 @@ find_package(JPEG REQUIRED)
 find_package(GLEW QUIET)
 find_package(OpenGL QUIET)
 
-message("Importing MVE targets from ${MVE_TARGETS_DIR}")
 include("${MVE_TARGETS_DIR}/mve-targets.cmake")
 
 foreach(INTERNAL_TARGET mve::mve_settings mve::mve_util mve::mve_math mve::mve_core mve::mve_sfm mve::mve_fssr mve::mve_ogl)
     string(REPLACE "mve_" "" ALIASED_TARGET ${INTERNAL_TARGET})
     if(NOT TARGET ${ALIASED_TARGET})
-        message("Adding alias target of ${INTERNAL_TARGET} as ${ALIASED_TARGET}")
         add_library(${ALIASED_TARGET} ALIAS ${INTERNAL_TARGET})
     endif()
 endforeach()
